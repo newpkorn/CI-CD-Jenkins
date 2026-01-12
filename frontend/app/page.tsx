@@ -2,20 +2,42 @@
 
 import { useState, useEffect } from 'react';
 
+/**
+ * Type ของข้อมูลจาก API /attractions
+ * ปรับ field ให้ตรงกับ database / backend ของคุณได้
+ */
+interface Attraction {
+    id: number;
+    name: string;
+    coverimage?: string | null;
+    detail?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+}
+
 export default function Page() {
-    const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [rows, setRows] = useState<Attraction[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function getAttractions() {
             try {
                 const apiHost = process.env.NEXT_PUBLIC_API_HOST;
+
+                if (!apiHost) {
+                    throw new Error('API host is not configured');
+                }
+
                 const res = await fetch(`${apiHost}/attractions`, {
                     cache: 'no-store',
                 });
-                if (!res.ok) throw new Error('Failed to fetch');
-                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch: ${res.status}`);
+                }
+
+                const data: Attraction[] = await res.json();
                 setRows(data);
             } catch (err: unknown) {
                 if (err instanceof Error) {
@@ -54,7 +76,7 @@ export default function Page() {
                 <p className="subtitle">Discover points of interest nearby</p>
             </header>
 
-            {!rows || rows.length === 0 ? (
+            {rows.length === 0 ? (
                 <div className="empty">No attractions found.</div>
             ) : (
                 <section className="grid" aria-live="polite">
@@ -71,20 +93,23 @@ export default function Page() {
                                     />
                                 </div>
                             )}
+
                             <div className="body">
                                 <h3 className="card-title">{x.name}</h3>
+
                                 {x.detail && (
                                     <p className="detail">{x.detail}</p>
                                 )}
+
                                 <div className="meta">
                                     <small>
                                         Lat:{' '}
                                         <span className="code">
-                                            {x.latitude}
+                                            {x.latitude ?? '-'}
                                         </span>{' '}
                                         · Lng:{' '}
                                         <span className="code">
-                                            {x.longitude}
+                                            {x.longitude ?? '-'}
                                         </span>
                                     </small>
                                 </div>
