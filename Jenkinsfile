@@ -85,7 +85,6 @@ API_HOST=${params.API_HOST}
                 script {
                     echo "Deploying to production using Docker Compose..."
 
-                    // Stop existing containers
                     def downCommand = 'docker compose down'
                     if (params.CLEAN_VOLUMES) {
                         echo "WARNING: Removing volumes (database will be cleared)"
@@ -93,9 +92,10 @@ API_HOST=${params.API_HOST}
                     }
                     sh downCommand
 
-                    // Build and start services
                     sh """
-                        docker compose build --no-cache
+                        docker compose build \
+                        --no-cache \
+                        --build-arg NEXT_PUBLIC_API_HOST=${params.API_HOST}
                         docker compose up -d
                     """
 
