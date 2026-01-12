@@ -6,13 +6,13 @@
 
 // export default nextConfig;
 
-/** @type {import('next').NextConfig} */
-const API_HOST = process.env.API_HOST || 'http://localhost:3001';
+import type { NextConfig } from 'next';
 
-const nextConfig = {
+const nextConfig: NextConfig = {
     output: 'standalone',
     env: {
-        NEXT_PUBLIC_API_HOST: API_HOST,
+        NEXT_PUBLIC_API_HOST:
+            process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:3001',
     },
 };
 
