@@ -17,8 +17,12 @@ export default function Page() {
                 if (!res.ok) throw new Error('Failed to fetch');
                 const data = await res.json();
                 setRows(data);
-            } catch (err) {
-                setError(err.message);
+            } catch (err: any) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError('Unknown error');
+                }
             } finally {
                 setLoading(false);
             }
