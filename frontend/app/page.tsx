@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 export default function Page() {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function getAttractions() {
@@ -17,7 +17,7 @@ export default function Page() {
                 if (!res.ok) throw new Error('Failed to fetch');
                 const data = await res.json();
                 setRows(data);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 if (err instanceof Error) {
                     setError(err.message);
                 } else {
