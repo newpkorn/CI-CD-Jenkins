@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         // Build Information
-        BUILD_TAG = "${env.example.BUILD_NUMBER}"
+        BUILD_TAG = "${env.BUILD_NUMBER}"
         // Compute short commit inside a step (not inlined in env with sh)
     }
 
@@ -32,9 +32,9 @@ pipeline {
                     echo "Checking out code..."
                     checkout scm
                     // safe: compute commit here
-                    env.example.GIT_COMMIT_SHORT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    env.GIT_COMMIT_SHORT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                     echo "Deploying to production environment"
-                    echo "Build: ${BUILD_TAG}, Commit: ${env.example.GIT_COMMIT_SHORT}"
+                    echo "Build: ${BUILD_TAG}, Commit: ${env.GIT_COMMIT_SHORT}"
                 }
             }
         }
@@ -60,10 +60,10 @@ pipeline {
                     ]) {
                         // Safely write .env without using `sh` interpolation
                         writeFile file: '.env', text: """\
-MYSQL_ROOT_PASSWORD=${env.exampleMYSQL_ROOT_PASS}
+MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASS}
 MYSQL_DATABASE=attractions_db
 MYSQL_USER=attractions_user
-MYSQL_PASSWORD=${env.exampleMYSQL_PASS}
+MYSQL_PASSWORD=${envMYSQL_PASS}
 MYSQL_PORT=3306
 PHPMYADMIN_PORT=8888
 API_PORT=3001
@@ -156,7 +156,7 @@ API_HOST=${params.API_HOST}
         success {
             echo "✅ Deployment completed successfully!"
             echo "Build: ${BUILD_TAG}"
-            echo "Commit: ${env.exampleGIT_COMMIT_SHORT}"
+            echo "Commit: ${env.GIT_COMMIT_SHORT}"
             echo ""
             echo "Access your application:"
             echo "  - Frontend: http://localhost:3000"
