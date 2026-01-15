@@ -19,6 +19,10 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
+app.get('/', (req, res) => {
+    return res.json({ message: `API is working on ${new Date()}}` });
+});
+
 app.get('/health', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT 1 AS ok');
