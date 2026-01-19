@@ -20,10 +20,6 @@ export default function Page() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const portt = process.argv[2] || 3001;
-
-    console.log(`Received request at ${portt}`);
-
     useEffect(() => {
         async function getAttractions() {
             try {

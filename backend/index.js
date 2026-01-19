@@ -3,8 +3,6 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 require('dotenv').config({ path: '.env' });
 
-const portt = process.argv[2] || 3001;
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,8 +20,7 @@ const pool = mysql.createPool({
 });
 
 app.get('/', (req, res) => {
-    console.log(`Received request at ${portt}`);
-    return res.json({ message: `API is working on ${new Date()}}` });
+    res.json({ message: `API is working on ${new Date()}}` });
 });
 
 app.get('/health', async (req, res) => {
