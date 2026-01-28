@@ -9,7 +9,6 @@ pipeline {
     environment {
         // Build Information
         BUILD_TAG = "${env.BUILD_NUMBER}"
-        // Compute short commit inside a step (not inlined in env with sh)
     }
 
     parameters {
@@ -73,7 +72,6 @@ NODE_ENV=production
 API_HOST=${params.API_HOST}
 """.stripIndent()
 
-                        // Avoid printing secrets
                         echo ".env file created successfully"
                     }
                 }
@@ -88,7 +86,7 @@ API_HOST=${params.API_HOST}
                     def downCommand = 'docker compose down'
                     if (params.CLEAN_VOLUMES) {
                         echo "WARNING: Removing volumes (database will be cleared)"
-                        downCommand = 'docker compose down'
+                        downCommand = 'docker compose down --volumes'
                     }
                     sh downCommand
 
@@ -116,11 +114,13 @@ API_HOST=${params.API_HOST}
                         # Check if containers are running
                         docker compose ps
 
-                        # Wait for API to be ready (max 60 seconds)
-                        timeout 60 bash -c 'until curl -f http://localhost:3001/health; do sleep 2; done' || exit 1
+                        # --- FIX: Check internal API connectivity using docker exec ---
+                        # We verify inside the 'api' container because Jenkins cannot access localhost ports directly
+                        echo "Checking API Health..."
+                        timeout 60 bash -c 'until docker compose exec -T api wget -q --spider http://localhost:3001/health; do sleep 2; done' || exit 1
 
-                        # Check attractions endpoint
-                        curl -f http://localhost:3001/attractions || exit 1
+                        echo "Checking Attractions Endpoint..."
+                        docker compose exec -T api wget -q --spider http://localhost:3001/attractions || exit 1
 
                         echo "Health check passed!"
                     """
@@ -140,12 +140,10 @@ API_HOST=${params.API_HOST}
                         echo ""
                         echo "=== Service Logs (last 20 lines) ==="
                         docker compose logs --tail=20
-
-                        echo ""
+                        
                         echo "=== Deployed Services ==="
                         echo "Frontend: http://localhost:3000"
                         echo "API: http://localhost:3001"
-                        echo "phpMyAdmin: http://localhost:8888"
                     """
                 }
             }
@@ -157,11 +155,6 @@ API_HOST=${params.API_HOST}
             echo "✅ Deployment completed successfully!"
             echo "Build: ${BUILD_TAG}"
             echo "Commit: ${env.GIT_COMMIT_SHORT}"
-            echo ""
-            echo "Access your application:"
-            echo "  - Frontend: http://localhost:3000"
-            echo "  - API: http://localhost:3001"
-            echo "  - phpMyAdmin: http://localhost:8888"
         }
         failure {
             echo "❌ Deployment failed!"
